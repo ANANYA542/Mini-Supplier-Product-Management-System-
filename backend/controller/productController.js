@@ -12,29 +12,48 @@ exports.createProduct = async (req, res) => {
 
 
 exports.getProducts = async (req, res) => {
-  try {
-    const { category, certification_status } = req.query;
+    try {
+      const { category, certification_status, search, page = 1, limit = 10 } =
+        req.query;
+  
+      let filter = {};
+  
 
-    let filter = {};
+      if (category) {
+        filter.category = category;
+      }
+  
 
-    if (category) {
-      filter.category = category;
+      if (certification_status) {
+        filter.certification_status = certification_status;
+      }
+  
+ 
+      if (search) {
+        filter.name = { $regex: search, $options: "i" };
+      }
+  
+      const skip = (page - 1) * limit;
+  
+      const total = await Product.countDocuments(filter);
+  
+      const products = await Product.find(filter)
+        .populate("supplier_id", "name country")
+        .skip(skip)
+        .limit(Number(limit));
+  
+      res.status(200).json({
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+        data: products,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
-    if (certification_status) {
-      filter.certification_status = certification_status;
-    }
-
-    const products = await Product.find(filter).populate(
-      "supplier_id",
-      "name email country"
-    );
-
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  };
+  
 
 
 exports.updateProduct = async (req, res) => {
