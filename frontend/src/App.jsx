@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Suppliers from './pages/Suppliers';
 import Products from './pages/Products';
@@ -6,11 +7,14 @@ import Products from './pages/Products';
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/suppliers" element={<Suppliers />} />
-        <Route path="/products" element={<Products />} />
-      </Routes>
+      <Navbar />
+      <div className="container mx-auto p-4">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/products" element={<Products />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }
