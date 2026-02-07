@@ -4,11 +4,31 @@ import { getSuppliers, getProducts } from '../services/api';
 export default function Dashboard() {
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState({ total: 0, data: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getSuppliers().then((res) => setSuppliers(res.data));
-    getProducts().then((res) => setProducts(res.data));
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const [suppliersRes, productsRes] = await Promise.all([
+          getSuppliers(),
+          getProducts()
+        ]);
+        setSuppliers(suppliersRes.data);
+        setProducts(productsRes.data);
+      } catch (err) {
+        setError("Failed to load dashboard data. Please check the backend.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
+
+  if (loading) return <div className="text-center p-8 text-gray-500">Loading dashboard...</div>;
+  if (error) return <div className="text-center p-8 text-red-500">{error}</div>;
 
   return (
     <div>
@@ -28,8 +48,7 @@ export default function Dashboard() {
 
 
       <div className="grid md:grid-cols-2 gap-8">
-        
-    
+      
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
              <h2 className="text-lg font-semibold text-gray-700">Recent Suppliers</h2>
@@ -44,7 +63,7 @@ export default function Dashboard() {
                 <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{s.country}</span>
               </div>
             ))}
-            {suppliers.length === 0 && <p className="p-6 text-gray-400 text-center">No suppliers found.</p>}
+            {suppliers.length === 0 && <p className="p-6 text-gray-400 text-center">No suppliers yet.</p>}
           </div>
         </div>
         
@@ -63,7 +82,7 @@ export default function Dashboard() {
                 <span className="font-bold text-green-600">${p.price}</span>
               </div>
             ))}
-            {products.data.length === 0 && <p className="p-6 text-gray-400 text-center">No products found.</p>}
+            {products.data.length === 0 && <p className="p-6 text-gray-400 text-center">No products yet.</p>}
           </div>
         </div>
 

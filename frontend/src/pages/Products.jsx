@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { getProducts, addProduct, getSuppliers } from '../services/api';
 
@@ -17,6 +16,9 @@ export default function Products() {
   const [filters, setFilters] = useState({ category: '', certification_status: '', search: '' });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type, message }
 
   useEffect(() => {
     fetchSuppliers();
@@ -40,6 +42,7 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const params = { page, ...filters };
       Object.keys(params).forEach(key => !params[key] && delete params[key]);
       
@@ -48,21 +51,43 @@ export default function Products() {
       setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error(err);
+      setFeedback({ type: 'error', message: 'Failed to load products.' });
+    } finally {
+      setLoading(false);
     }
   };
 
+  const validateForm = () => {
+    if (form.price <= 0) return "Price must be greater than 0.";
+    if (form.stock_quantity < 0) return "Stock cannot be negative.";
+    if (!form.supplier_id) return "Please select a supplier.";
+    return null;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFeedback(null);
+    
+    const errorMsg = validateForm();
+    if (errorMsg) {
+      setFeedback({ type: 'error', message: errorMsg });
+      return;
+    }
+
     try {
+      setSubmitting(true);
       await addProduct(form);
-      alert('Product added!');
       setForm({
         name: '', price: '', stock_quantity: '', category: 'Organic Food',
         supplier_id: suppliers[0]?._id || '', certification_status: 'Pending', description: ''
       });
       fetchProducts();
+      setFeedback({ type: 'success', message: 'Product added successfully!' });
+      setTimeout(() => setFeedback(null), 3000);
     } catch (err) {
-      alert('Error adding product');
+      setFeedback({ type: 'error', message: 'Error adding product.' });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -81,9 +106,16 @@ export default function Products() {
 
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
         <h2 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Add New Product</h2>
+        
+        {feedback && (
+          <div className={`p-3 mb-4 rounded text-sm ${feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {feedback.message}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <input className={inputClass} placeholder="Product Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-          <input className={inputClass} placeholder="Price ($)" type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required />
+          <input className={inputClass} placeholder="Price ($)" type="number" step="0.01" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required />
           <input className={inputClass} placeholder="Stock Qty" type="number" value={form.stock_quantity} onChange={e => setForm({...form, stock_quantity: e.target.value})} required />
           
           <select className={selectClass} value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
@@ -106,8 +138,12 @@ export default function Products() {
           <textarea className={`${inputClass} md:col-span-2 lg:col-span-2`} placeholder="Description (optional)" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
           
           <div className="md:col-span-2 lg:col-span-4 flex justify-end mt-2">
-            <button type="submit" className="bg-green-600 text-white px-8 py-2 rounded-md hover:bg-green-700 shadow-sm font-medium transition-colors">
-              + Add Product
+            <button 
+              type="submit" 
+              disabled={submitting}
+              className="bg-green-600 text-white px-8 py-2 rounded-md hover:bg-green-700 shadow-sm font-medium transition-colors disabled:bg-green-300"
+            >
+              {submitting ? 'Saving...' : '+ Add Product'}
             </button>
           </div>
         </form>
@@ -139,43 +175,47 @@ export default function Products() {
         </div>
       </div>
 
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(p => (
-          <div key={p._id} className="bg-white border boundary-gray-200 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col h-full">
-            <div className="p-5 flex-grow">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{p.name}</h3>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  p.certification_status === 'Certified' ? 'bg-green-100 text-green-800' : 
-                  p.certification_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {p.certification_status}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500 mb-4">{p.category}</p>
-              
-              <div className="flex justify-between items-baseline mb-4">
-                <span className="text-2xl font-bold text-gray-900">${p.price}</span>
-                <span className="text-sm text-gray-500">Stock: {p.stock_quantity}</span>
-              </div>
-              
-              <div className="pt-4 border-t border-gray-100 flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600 font-bold">
-                  {p.supplier_id?.name ? p.supplier_id.name.charAt(0) : '?'}
+      {loading ? (
+        <p className="text-center text-gray-500 py-10">Loading products...</p>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map(p => (
+            <div key={p._id} className="bg-white border boundary-gray-200 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col h-full">
+              <div className="p-5 flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{p.name}</h3>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    p.certification_status === 'Certified' ? 'bg-green-100 text-green-800' : 
+                    p.certification_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {p.certification_status}
+                  </span>
                 </div>
-                <span className="text-sm text-gray-600 truncate flex-1">{p.supplier_id?.name || 'Unknown Supplier'}</span>
+                <p className="text-sm text-gray-500 mb-4">{p.category}</p>
+                
+                <div className="flex justify-between items-baseline mb-4">
+                  <span className="text-2xl font-bold text-gray-900">${p.price}</span>
+                  <span className="text-sm text-gray-500">Stock: {p.stock_quantity}</span>
+                </div>
+                
+                <div className="pt-4 border-t border-gray-100 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600 font-bold">
+                    {p.supplier_id?.name ? p.supplier_id.name.charAt(0) : '?'}
+                  </div>
+                  <span className="text-sm text-gray-600 truncate flex-1">{p.supplier_id?.name || 'Unknown Supplier'}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
         
-      {products.length === 0 && (
+      {!loading && products.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300 mt-6">
           <p className="text-gray-500">No products found matching your criteria.</p>
         </div>
       )}
+
 
       {totalPages > 1 && (
         <div className="mt-8 flex gap-3 justify-center items-center">
