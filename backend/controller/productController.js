@@ -13,7 +13,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
-      const { category, certification_status, search, page = 1, limit = 10 } =
+      const { category, certification_status, search, supplier_id, page = 1, limit = 10 } =
         req.query;
   
       let filter = {};
@@ -26,6 +26,10 @@ exports.getProducts = async (req, res) => {
 
       if (certification_status) {
         filter.certification_status = certification_status;
+      }
+
+      if (supplier_id) {
+        filter.supplier_id = supplier_id;
       }
   
  
