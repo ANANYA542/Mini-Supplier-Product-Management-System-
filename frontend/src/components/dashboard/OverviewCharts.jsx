@@ -36,9 +36,12 @@ export function CategoryBarChart({ data }) {
 export function CertificationPieChart({ data }) {
     if (!data || data.length === 0) return <div className="text-center text-gray-300 italic h-64 flex items-center justify-center">No data available</div>;
 
+    const total = data.reduce((sum, item) => sum + item.count, 0);
+
     const chartData = data.map((item, index) => ({
         ...item,
         name: item._id,
+        percentage: ((item.count / total) * 100).toFixed(0),
         fill: item._id === 'Certified' ? '#4ade80' : item._id === 'Pending' ? '#facc15' : '#d1d5db'
     }));
 
@@ -54,13 +57,34 @@ export function CertificationPieChart({ data }) {
             paddingAngle={5}
             dataKey="count"
             nameKey="name"
+            label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                const RADIAN = Math.PI / 180;
+                const radius = outerRadius + 20;
+                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                return (
+                  <text x={x} y={y} fill="#6b7280" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
+                    {`${(percent * 100).toFixed(0)}%`}
+                  </text>
+                );
+            }}
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
             ))}
           </Pie>
           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-          <Legend iconType="circle" verticalAlign="bottom" height={36} iconSize={8} formatter={(value) => <span className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">{value}</span>} />
+          <Legend 
+            iconType="circle" 
+            verticalAlign="bottom" 
+            height={36} 
+            iconSize={8} 
+            formatter={(value, entry) => (
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
+                    {value} <span className="text-gray-400">({entry.payload.percentage}%)</span>
+                </span>
+            )} 
+          />
         </PieChart>
       </ResponsiveContainer>
     );

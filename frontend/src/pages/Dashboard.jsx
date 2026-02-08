@@ -34,7 +34,7 @@ export default function Dashboard() {
     <div>
       <h1 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight">Dashboard Overview</h1>
 
-      {/* Stats Cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50 flex items-center justify-between hover:shadow-md transition-shadow">
           <div>
@@ -61,9 +61,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts Section */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        {/* Category Chart */}
+
         <div className="bg-white p-8 rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.02)] min-h-[400px]">
            <div className="flex justify-between items-center mb-6">
              <div>
@@ -75,7 +75,7 @@ export default function Dashboard() {
            <CategoryBarChart data={productsByCategory} />
         </div>
 
-        {/* Certification Status */}
+
         <div className="bg-white p-8 rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.02)] min-h-[400px]">
             <div className="flex justify-between items-center mb-6">
               <div>

@@ -33,9 +33,9 @@ export default function Products() {
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  useEffect(() => {
-    fetchSuppliers();
-  }, [fetchSuppliers]);
+  // Removed redundant fetchSuppliers call. internal hook manages it if needed, or we rely on initial load.
+  // Actually, useSuppliers hook auto-fetches on mount.
+  // We can just rely on that.
 
   useEffect(() => {
     const supplierId = searchParams.get('supplier_id');
@@ -61,11 +61,11 @@ export default function Products() {
     setPage(1);
   };
 
-  const handleCreate = async (data) => {
+    const handleCreate = async (data) => {
     const result = await addNewProduct(data);
     if (result.success) {
         setFeedback({ type: 'success', message: 'Product added successfully!' });
-        fetchProducts({ page, ...filters });
+        fetchProducts({ page, limit: 3, ...filters });
         setTimeout(() => setFeedback(null), 3000);
         return { success: true };
     } else {
@@ -77,7 +77,7 @@ export default function Products() {
     const result = await updateProductInfo(data._id, data);
     if (result.success) {
         setFeedback({ type: 'success', message: 'Product updated successfully!' });
-        fetchProducts({ page, ...filters });
+        fetchProducts({ page, limit: 3, ...filters });
         setTimeout(() => setFeedback(null), 3000);
         return { success: true };
     } else {
@@ -90,7 +90,7 @@ export default function Products() {
     const result = await removeProduct(id);
     if (result.success) {
         setFeedback({ type: 'success', message: 'Product deleted.' });
-        fetchProducts({ page, ...filters });
+        fetchProducts({ page, limit: 3, ...filters });
         setTimeout(() => setFeedback(null), 2000);
     } else {
         setFeedback({ type: 'error', message: result.error });
@@ -163,7 +163,6 @@ export default function Products() {
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-12 flex justify-center items-center gap-2 pb-10">
            <button 

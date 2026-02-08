@@ -24,7 +24,10 @@ export default function ProductCard({ product, onEdit, onDelete }) {
         <div className="flex justify-between items-start mb-2">
             <h3 className="font-bold text-lg text-gray-800 line-clamp-1 group-hover:text-orange-500 transition-colors">{product.name}</h3>
         </div>
-        <p className="text-xs text-gray-500 mb-4 bg-gray-50 inline-block px-2 py-1 rounded-md">{product.category}</p>
+        <p className="text-xs text-gray-500 mb-2 bg-gray-50 inline-block px-2 py-1 rounded-md">{product.category}</p>
+        {product.description && (
+            <p className="text-xs text-gray-400 line-clamp-2 mb-2 h-8">{product.description}</p>
+        )}
         
         <div className="flex justify-between items-end mt-4">
             <div>

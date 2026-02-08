@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+
 import { useState } from 'react';
 import { useSuppliers } from '../hooks/useSuppliers';
 import SupplierFormModal from '../components/suppliers/SupplierFormModal';
@@ -81,7 +81,6 @@ export default function Suppliers() {
         />
       )}
 
-      {/* Search & Table */}
       <div className="mb-6 flex gap-3">
         <input 
           className="border border-gray-200 bg-white p-3 rounded-full shadow-sm w-full md:w-1/3 focus:ring-2 focus:ring-orange-200 focus:outline-none pl-5 text-sm" 

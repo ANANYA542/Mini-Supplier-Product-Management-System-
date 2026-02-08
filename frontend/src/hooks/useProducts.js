@@ -13,7 +13,7 @@ export const useProducts = () => {
     try {
       setLoading(true);
       setError(null);
-      // Clean params
+      
       const cleanParams = { ...params };
       if (cleanParams.search) cleanParams.search = cleanParams.search.trim();
       Object.keys(cleanParams).forEach(key => !cleanParams[key] && delete cleanParams[key]);
