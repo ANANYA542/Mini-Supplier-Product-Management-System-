@@ -32,6 +32,12 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    unit: {
+      type: String,
+      required: true,
+      default: 'pcs'
+    },
+
     certification_status: {
       type: String,
       enum: ["Certified", "Pending", "Not Certified"],
