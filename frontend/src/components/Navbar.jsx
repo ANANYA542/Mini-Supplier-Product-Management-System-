@@ -15,9 +15,9 @@ export default function Navbar() {
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center text-white font-bold shadow-md">
-            S
+            G
           </div>
-          <span className="text-xl font-bold text-gray-800 tracking-tight">Supplier<span className="text-orange-500">Dash</span></span>
+          <span className="text-xl font-bold text-gray-800 tracking-tight">GreenTrade<span className="text-orange-500">Hub</span></span>
         </div>
         <ul className="flex gap-2">
           <li><Link to="/" className={linkClass("/")}>Dashboard</Link></li>
