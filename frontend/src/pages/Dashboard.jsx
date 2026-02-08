@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getSuppliers, getProducts } from '../services/api';
+import { getSummary } from '../services/api';
+import { CategoryBarChart, CertificationPieChart } from '../components/dashboard/OverviewCharts';
+import Loader from '../components/common/Loader';
+import ErrorMessage from '../components/common/ErrorMessage';
 
 export default function Dashboard() {
-  const [suppliers, setSuppliers] = useState([]);
-  const [products, setProducts] = useState({ total: 0, data: [] });
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -11,14 +13,10 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         setLoading(true);
-        const [suppliersRes, productsRes] = await Promise.all([
-          getSuppliers(),
-          getProducts()
-        ]);
-        setSuppliers(suppliersRes.data);
-        setProducts(productsRes.data);
+        const res = await getSummary();
+        setData(res.data);
       } catch (err) {
-        setError("Failed to load dashboard data. Please check the backend.");
+        setError("Failed to load dashboard. Free-tier backend might be sleeping (approx 60s wake-up).");
         console.error(err);
       } finally {
         setLoading(false);
@@ -27,65 +25,67 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="text-center p-8 text-gray-500">Loading dashboard...</div>;
-  if (error) return <div className="text-center p-8 text-red-500">{error}</div>;
+  if (loading) return <Loader text="Loading Dashboard..." />;
+  if (error) return <ErrorMessage message={error} />;
+
+  const { totalSuppliers, totalProducts, productsByCategory, certificationStats } = data;
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
-      
+      <h1 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight">Dashboard Overview</h1>
 
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-          <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Suppliers</h2>
-          <p className="text-4xl font-bold text-gray-800 mt-2">{suppliers.length}</p>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50 flex items-center justify-between hover:shadow-md transition-shadow">
+          <div>
+            <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Suppliers</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-2">{totalSuppliers}</p>
+          </div>
+          <div className="bg-orange-100 p-4 rounded-full text-orange-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-          <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Products</h2>
-          <p className="text-4xl font-bold text-gray-800 mt-2">{products.total}</p>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100/50 flex items-center justify-between hover:shadow-md transition-shadow">
+          <div>
+            <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Products</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-2">{totalProducts}</p>
+          </div>
+          <div className="bg-green-100 p-4 rounded-full text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
         </div>
       </div>
 
-
-      <div className="grid md:grid-cols-2 gap-8">
-      
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-             <h2 className="text-lg font-semibold text-gray-700">Recent Suppliers</h2>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {suppliers.slice(-3).reverse().map((s) => (
-              <div key={s._id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                <div>
-                  <p className="font-medium text-gray-800">{s.name}</p>
-                  <p className="text-xs text-gray-500">{s.contact_person}</p>
-                </div>
-                <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{s.country}</span>
-              </div>
-            ))}
-            {suppliers.length === 0 && <p className="p-6 text-gray-400 text-center">No suppliers yet.</p>}
-          </div>
-        </div>
-        
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-700">New Products</h2>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {products.data.slice(0, 3).map((p) => (
-              <div key={p._id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                <div>
-                  <p className="font-medium text-gray-800">{p.name}</p>
-                  <p className="text-xs text-gray-500">{p.category}</p>
-                </div>
-                <span className="font-bold text-green-600">${p.price}</span>
-              </div>
-            ))}
-            {products.data.length === 0 && <p className="p-6 text-gray-400 text-center">No products yet.</p>}
-          </div>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        {/* Category Chart */}
+        <div className="bg-white p-8 rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.02)] min-h-[400px]">
+           <div className="flex justify-between items-center mb-6">
+             <div>
+                <h3 className="text-lg font-bold text-gray-800">Products by Category</h3>
+                <p className="text-xs text-gray-400 mt-1">Inventory distribution</p>
+             </div>
+           </div>
+           
+           <CategoryBarChart data={productsByCategory} />
         </div>
 
+        {/* Certification Status */}
+        <div className="bg-white p-8 rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.02)] min-h-[400px]">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                  <h3 className="text-lg font-bold text-gray-800">Certification Status</h3>
+                  <p className="text-xs text-gray-400 mt-1">Compliance overview</p>
+              </div>
+            </div>
+
+            <CertificationPieChart data={certificationStats} />
+        </div>
       </div>
     </div>
   );
