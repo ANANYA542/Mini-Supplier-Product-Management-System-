@@ -8,7 +8,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-6 pt-24">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/suppliers" element={<Suppliers />} />
