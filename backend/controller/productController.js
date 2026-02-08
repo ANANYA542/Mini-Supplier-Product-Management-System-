@@ -3,6 +3,12 @@ const Product = require("../models/Product");
 
 exports.createProduct = async (req, res) => {
   try {
+    if (req.body.certification_expiry_date) {
+      const date = new Date(req.body.certification_expiry_date);
+      if (isNaN(date.getTime())) {
+        return res.status(400).json({ message: "Invalid certification expiry date" });
+      }
+    }
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (error) {
@@ -62,6 +68,12 @@ exports.getProducts = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
+    if (req.body.certification_expiry_date) {
+        const date = new Date(req.body.certification_expiry_date);
+        if (isNaN(date.getTime())) {
+          return res.status(400).json({ message: "Invalid certification expiry date" });
+        }
+    }
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
