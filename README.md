@@ -110,10 +110,12 @@ I designed the database with two main models: **Supplier** and **Product**. A su
 
 ## Live Demo Links
 
-*   **Frontend Live**: 
+*   **Frontend Live**: https://mini-supplier-product-management-sy.vercel.app/
 *   **Backend Live**: https://mini-supplier-product-management-system.onrender.com/
 
 ---
+> **Note:** Backend may take up to a minute to start on first load (Render free tier sleep mode).
+
 
 ## Assumptions / Design Decisions
 
