@@ -89,13 +89,13 @@ ALL THE SCREENSHOTS ARE ATTATCHED IN THE [API Documentation](API_DOCUMENTATION.m
 
 Here is what the app looks like:
 
-![Dashboard Overview](dashboard.png)
+![Dashboard Overview](docs/dashboard.png)
 *The main dashboard with charts.*
 
-![Product Catalog](products.png)
+![Product Catalog](docs/products.png)
 *Managing products with filters and pagination.*
 
-![Add Supplier](supplier.png)
+![Add Supplier](docs/supplier.png)
 *Form to add a new supplier.*
 
 ---
