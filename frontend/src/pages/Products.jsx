@@ -33,9 +33,6 @@ export default function Products() {
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  // Removed redundant fetchSuppliers call. internal hook manages it if needed, or we rely on initial load.
-  // Actually, useSuppliers hook auto-fetches on mount.
-  // We can just rely on that.
 
   useEffect(() => {
     const supplierId = searchParams.get('supplier_id');
